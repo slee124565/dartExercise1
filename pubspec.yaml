@@ -8,7 +8,7 @@ environment:
 
 dependencies:
   udp: ^3.0.3
-  easy_udp: ^1.2.0
+#  easy_udp: ^1.2.0
 #  path: ^1.6.0
 
 dev_dependencies:
