@@ -1,5 +1,7 @@
 // import 'dart:io';
 
+import 'dart:typed_data';
+
 import 'package:udp/udp.dart';
 
 void start_server() async {
@@ -7,9 +9,14 @@ void start_server() async {
   var isTimeout = false;
   while (!isTimeout) {
     isTimeout = await server.listen((datagram) async {
-      var str = String.fromCharCodes(datagram.data);
-      print('server receive data $str, '
-          'client ${datagram.address}, ${datagram.port}');
+      var byteBuffer = datagram.data.buffer; //ByteBuffer
+      // var str = String.fromCharCodes(datagram.data);
+      byteBuffer.asUint8List().forEach((element) {
+        print('element $element, ${String.fromCharCode(element)}');
+      });
+      // print('byteBuffer $byteBuffer');
+      // print('server receive byteBuffer.toString ${byteBuffer.toString()}, '
+      //     'client ${datagram.address}, ${datagram.port}');
       await server.send('server echo'.codeUnits,
           Endpoint.unicast(datagram.address, port: Port(datagram.port)));
     }, timeout: Duration(seconds: 3));
