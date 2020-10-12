@@ -38,10 +38,10 @@ class LocalSdkFormat {
   var app_id = Uint8List(4);
 
   // Pointer<Uint8> admin;
-  var admin = Uint8List(20);
+  var _admin = Uint8List(20);
 
   // Pointer<Uint8> password;
-  var password = Uint8List(20);
+  var _password = Uint8List(20);
 
   // Pointer<Uint8> app_ip;
   var app_ip = Uint8List(4);
@@ -50,10 +50,12 @@ class LocalSdkFormat {
   var _app_port = Uint8List(2);
 
   int get app_port {
-    print('$_app_port');
-    var _value = BytesBuilder().add(_app_port);
-
-    return Uint16List.fromList(_app_port).buffer.asUint16List()[0];
+    // print('$_app_port ${_app_port[0].toRadixString(16)}');
+    // print('${_app_port[0].toRadixString(16)}, ${_app_port[1].toRadixString(16)}');
+    // print('${ByteData.sublistView(_app_port).getUint16(0).toRadixString(16)}');
+    // var _value = BytesBuilder().add(_app_port);
+    return ByteData.sublistView(_app_port).getUint16(0);
+    // return Uint16List.fromList(_app_port).buffer.asUint16List()[0];
   }
 
   // Pointer<Uint8> reserved_for_gw;
@@ -87,12 +89,20 @@ class LocalSdkFormat {
     return _value.toString();
   }
 
+  String get admin {
+    return String.fromCharCodes(_admin);
+  }
+
+  String get password {
+    return String.fromCharCodes(_password);
+  }
+
   factory LocalSdkFormat.fromPdu(Uint8List pdu) {
     var _data = LocalSdkFormat._();
     var index = 0;
     _data.reserved = pdu[index++];
     _data.len = pdu[index++];
-    var _seq_no = pdu[index++];
+    _data.seq_no = pdu[index++];
     _data.opcode = pdu[index++];
     _data.version = pdu[index++];
     _data.magic_id = pdu[index++];
@@ -100,9 +110,9 @@ class LocalSdkFormat {
     index +=3;
     _data.app_id = pdu.sublist(index, index+4);
     index +=4;
-    _data.admin = pdu.sublist(index, index+20);
+    _data._admin = pdu.sublist(index, index+20);
     index +=20;
-    _data.password = pdu.sublist(index, index+20);
+    _data._password = pdu.sublist(index, index+20);
     index +=20;
     _data.app_id = pdu.sublist(index, index+4);
     index +=4;
@@ -130,8 +140,8 @@ class LocalSdkFormat {
     search_op_cmd.magic_id = 0x88;
     search_op_cmd._gw_id = Uint8List(3);
     search_op_cmd.app_id = Uint8List.fromList([0, 0, 0, 1]);
-    search_op_cmd.admin = Uint8List(20);
-    search_op_cmd.password = Uint8List(20);
+    search_op_cmd._admin = Uint8List(20);
+    search_op_cmd._password = Uint8List(20);
     search_op_cmd.app_ip = address.rawAddress;
     search_op_cmd._app_port = _port.buffer.asUint8List();
     search_op_cmd.reserved_for_gw = Uint8List(4);
@@ -148,8 +158,8 @@ class LocalSdkFormat {
     data.add([reserved, len, LocalSdkFormat._seq_no, opcode, version, magic_id]);
     data.add(_gw_id);
     data.add(app_id);
-    data.add(admin);
-    data.add(password);
+    data.add(_admin);
+    data.add(_password);
     data.add(app_ip);
     data.add(_app_port);
     data.add(reserved_for_gw);
