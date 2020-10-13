@@ -170,53 +170,56 @@ class LocalSdkFormat {
   static LocalSdkFormat gw_list_all_request(InternetAddress address, int port) {
     var _port = ByteData(2)..setInt16(0, port, Endian.big);
     LocalSdkFormat._seq_no++;
-    var search_op_cmd = LocalSdkFormat._();
-    search_op_cmd.reserved = 0x00;
-    search_op_cmd.len = 0x00;
-    search_op_cmd.opcode = K_GET_ANY_SETTING_REQ_OP;
-    search_op_cmd.version = 0x01;
-    search_op_cmd.magic_id = 0x88;
-    search_op_cmd._gw_id = Uint8List.fromList([10, 119, 30]);
-    search_op_cmd.app_id = Uint8List.fromList([0, 0, 0, 1]);
+    var op_cmd = LocalSdkFormat._();
+    op_cmd.reserved = 0x00;
+    op_cmd.len = 0x00;
+    op_cmd.opcode = K_GET_ANY_SETTING_REQ_OP;
+    op_cmd.version = 0x01;
+    op_cmd.magic_id = 0x88;
+    op_cmd._gw_id = Uint8List.fromList([10, 119, 30]);
+    op_cmd.app_id = Uint8List.fromList([0, 0, 0, 1]);
     var _admin = 'admin'.codeUnits;
-    search_op_cmd._admin = Uint8List(20)
+    op_cmd._admin = Uint8List(20)
         ..setRange(0, _admin.length, _admin);
-    var _passowrd = 'password'.codeUnits;
-    search_op_cmd._password = Uint8List(20)
+    var _passowrd = 'admin'.codeUnits;
+    op_cmd._password = Uint8List(20)
         ..setRange(0, _passowrd.length, _passowrd);
-    search_op_cmd.app_ip = address.rawAddress;
-    search_op_cmd._app_port = _port.buffer.asUint8List();
-    search_op_cmd.reserved_for_gw = Uint8List(4);
-    search_op_cmd.fail_code = 0x00;
-    search_op_cmd.tlv_size = 0x00;
-    search_op_cmd.settings = Uint8List(4);
-    search_op_cmd.empty = 0x00;
-    search_op_cmd.checksum = 0x00;
-    return search_op_cmd;
+    op_cmd.app_ip = address.rawAddress;
+    op_cmd._app_port = _port.buffer.asUint8List();
+    op_cmd.reserved_for_gw = Uint8List(4);
+    op_cmd.fail_code = 0x00;
+    // var _unit = ByteData(2)
+    //   ..setInt16(0, K_TYPE_GATEWAY_LIST_ALL)
+    //   ..buffer.asUint8List();
+    op_cmd.tlv_size = 0x04;
+    op_cmd.settings = Uint8List.fromList([0, 235, 0, 0]);
+    op_cmd.empty = 0x00;
+    op_cmd.checksum = 0x00;
+    return op_cmd;
   }
 
   static LocalSdkFormat search_op_request(InternetAddress address, int port) {
     var _port = ByteData(2)..setInt16(0, port, Endian.big);
     LocalSdkFormat._seq_no++;
-    var search_op_cmd = LocalSdkFormat._();
-    search_op_cmd.reserved = 0x00;
-    search_op_cmd.len = 0xff;
-    search_op_cmd.opcode = K_SEARCH_OP_REQUEST;
-    search_op_cmd.version = 0x01;
-    search_op_cmd.magic_id = 0x88;
-    search_op_cmd._gw_id = Uint8List(3);
-    search_op_cmd.app_id = Uint8List.fromList([0, 0, 0, 1]);
-    search_op_cmd._admin = Uint8List(20);
-    search_op_cmd._password = Uint8List(20);
-    search_op_cmd.app_ip = address.rawAddress;
-    search_op_cmd._app_port = _port.buffer.asUint8List();
-    search_op_cmd.reserved_for_gw = Uint8List(4);
-    search_op_cmd.fail_code = 0x00;
-    search_op_cmd.tlv_size = 0x00;
-    search_op_cmd.settings = Uint8List(4);
-    search_op_cmd.empty = 0x00;
-    search_op_cmd.checksum = 0x00;
-    return search_op_cmd;
+    var op_cmd = LocalSdkFormat._();
+    op_cmd.reserved = 0x00;
+    op_cmd.len = 0xff;
+    op_cmd.opcode = K_SEARCH_OP_REQUEST;
+    op_cmd.version = 0x01;
+    op_cmd.magic_id = 0x88;
+    op_cmd._gw_id = Uint8List(3);
+    op_cmd.app_id = Uint8List.fromList([0, 0, 0, 1]);
+    op_cmd._admin = Uint8List(20);
+    op_cmd._password = Uint8List(20);
+    op_cmd.app_ip = address.rawAddress;
+    op_cmd._app_port = _port.buffer.asUint8List();
+    op_cmd.reserved_for_gw = Uint8List(4);
+    op_cmd.fail_code = 0x00;
+    op_cmd.tlv_size = 0x00;
+    op_cmd.settings = Uint8List(4);
+    op_cmd.empty = 0x00;
+    op_cmd.checksum = 0x00;
+    return op_cmd;
   }
 
   Uint8List toBytes() {
