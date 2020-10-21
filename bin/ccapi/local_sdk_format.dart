@@ -4,70 +4,14 @@ import 'dart:typed_data';
 
 import 'package:udp/udp.dart';
 
+import 'sample_data.dart';
+import 'tlv_t.dart';
+
 const K_SEARCH_OP_REQUEST = 0x01;
 const K_GET_ANY_SETTING_REQ_OP = 63;
 const K_TYPE_GATEWAY_LIST_ALL = 235;
 const K_TYPE_ZWAVE_SCENE_GET_ALL_INFO = 227;
 const K_TYPE_SEARCH_EXT_GATEWAY_INFO = 265;
-
-class TLV {
-  TLV._({this.type, this.len, this.value});
-
-  TLV.from_type_value({int type, Uint8List value}) {
-    var _type = ByteData(2)..setInt16(0, type);
-    this.type = _type.buffer.asUint8List();
-    if (value == null) {
-      this.value = Uint8List.fromList([0, 0, 0, 0]);
-    } else {
-      this.value = value;
-    }
-    var _len = ByteData(2)..setInt16(0, this.value.length);
-    len = _len.buffer.asUint8List();
-  }
-
-  static List<TLV> from_settings(int tlv_size, Uint8List pdu) {
-    var _settings = <TLV>[];
-    var n = 0;
-    while (n < pdu.length) {
-      var _len = ByteData.sublistView(pdu, n + 2, n + 4).getUint16(0);
-      if (_len > 0) {
-        _settings.add(TLV._(
-            type: pdu.sublist(n, n + 2),
-            len: pdu.sublist(n + 2, n + 4),
-            value: pdu.sublist(n + 4, n + 4 + _len)));
-        n += (4 + _len);
-      } else {
-        if ((n + 8) > pdu.length) {
-          _settings.add(TLV._(
-              type: pdu.sublist(n, n + 2),
-              len: pdu.sublist(n + 2, n + 4),
-              value: pdu.sublist(n + 4, n + 8)));
-          n += 8;
-        } else {
-          _settings.add(TLV._(
-              type: pdu.sublist(n, n + 2),
-              len: pdu.sublist(n + 2, n + 4),
-              value: pdu.sublist(n + 4)));
-          n = pdu.length;
-        }
-      }
-      if (_settings.length >= tlv_size) break;
-    }
-    return _settings;
-  }
-
-  Uint8List type;
-  Uint8List len;
-  Uint8List value;
-
-  Uint8List toBytes() {
-    var data = BytesBuilder();
-    data.add(type);
-    data.add(len);
-    data.add(value);
-    return data.toBytes();
-  }
-}
 
 class LocalSdkFormat {
   // LocalSdkFormat({this.opcode});
@@ -79,7 +23,7 @@ class LocalSdkFormat {
   int len = 0x00;
 
   @Uint8()
-  static int _seq_no = 0x00;
+  static int _seq_no = 100;
 
   @Uint8()
   int seq_no;
@@ -187,35 +131,40 @@ class LocalSdkFormat {
     index += 4;
     _data.fail_code = pdu[index++];
     // _data.tlv_size = pdu.sublist(index, index + 2).buffer.asUint16List()[0];
-    _data.tlv_size = ByteData.sublistView(pdu, index, index+2).getUint16(0);
-    print('data ${pdu.sublist(index, index + 2)} as tlv_szie ${_data.tlv_size}');
-    index += 2;
+    _data.tlv_size = ByteData.sublistView(pdu, index, index + 4).getUint32(0);
+    print(
+        'data ${pdu.sublist(index, index + 4)} as tlv_szie ${_data.tlv_size}');
+    index += 4;
     // _data.settings = pdu.sublist(index, index + 4);
-    print('debug index $index remain data ${pdu.sublist(index)}');
+    // print('debug index $index remain data ${pdu.sublist(index)}');
     if (_data.tlv_size > 0) {
-      _data.settings =
-          TLV.from_settings(_data.tlv_size, pdu.sublist(index));
+      _data.settings = TLV.from_settings(pdu.sublist(index));
       _data.settings.forEach((setting) {
-        index += setting.toBytes().length;
+        index += setting
+            .toBytes()
+            .length;
       });
     } else {
       _data.settings = [];
       print('warning tlv_size 0');
     }
-    print('[empty] index $index remain data ${pdu.sublist(index)}');
+    // print('[empty] field index $index remain data ${pdu.sublist(index)}');
     // _data.settings = pdu.sublist(index, index + 4);
     _data.empty = pdu[index++];
     _data.checksum = pdu[index++];
     if (index < pdu.length) {
       print('pdu not parsing data bytes ${pdu.sublist(index)}');
       print('pdu len ${pdu.length}. last index: $index');
+    } else {
+      print('pdu parsing matched spec');
     }
     return _data;
   }
 
   static LocalSdkFormat gw_list_all_request(InternetAddress address, int port) {
-    // var tlv_type = K_TYPE_ZWAVE_SCENE_GET_ALL_INFO;
-    var _port = ByteData(2)..setInt16(0, port, Endian.big);
+    var tlv_type = K_TYPE_ZWAVE_SCENE_GET_ALL_INFO;
+    var _port = ByteData(2)
+      ..setInt16(0, port, Endian.big);
     LocalSdkFormat._seq_no++;
     var op_cmd = LocalSdkFormat._();
     op_cmd.reserved = 0x00;
@@ -226,11 +175,15 @@ class LocalSdkFormat {
     op_cmd._gw_id = Uint8List.fromList([10, 119, 30]);
     op_cmd.app_id = Uint8List.fromList([0, 0, 0, 1]);
     var _admin = 'admin'.codeUnits;
-    op_cmd._admin = Uint8List(20)..setRange(0, _admin.length, _admin);
+    op_cmd._admin = Uint8List(20)
+      ..setRange(0, _admin.length, _admin);
     var _password = 'admin'.codeUnits;
-    op_cmd._password = Uint8List(20)..setRange(0, _password.length, _password);
+    op_cmd._password = Uint8List(20)
+      ..setRange(0, _password.length, _password);
     op_cmd.app_ip = address.rawAddress;
     op_cmd._app_port = _port.buffer.asUint8List();
+    // op_cmd.app_ip = Uint8List.fromList([0,0,0,0]);
+    // op_cmd._app_port = Uint8List.fromList([0,0]);
     op_cmd.reserved_for_gw = Uint8List(4);
     op_cmd.fail_code = 0x00;
     // var _unit = ByteData(2)
@@ -240,7 +193,7 @@ class LocalSdkFormat {
     // op_cmd.settings = Uint8List.fromList([0, 235, 0, 0]);
     // var _settings = TLV.from_type_value(type: K_TYPE_ZWAVE_SCENE_GET_ALL_INFO);
     op_cmd.settings = [
-      TLV.from_type_value(type: K_TYPE_ZWAVE_SCENE_GET_ALL_INFO)
+      TLV.from_type_value(type: tlv_type)
     ];
     // op_cmd.settings = Uint8List.fromList(
     //     [0, K_TYPE_ZWAVE_SCENE_GET_ALL_INFO, 0, 0, 0, 0, 0, 0]);
@@ -252,7 +205,8 @@ class LocalSdkFormat {
   }
 
   static LocalSdkFormat search_op_request(InternetAddress address, int port) {
-    var _port = ByteData(2)..setInt16(0, port, Endian.big);
+    var _port = ByteData(2)
+      ..setInt16(0, port, Endian.big);
     LocalSdkFormat._seq_no++;
     var op_cmd = LocalSdkFormat._();
     op_cmd.reserved = 0x00;
@@ -289,10 +243,16 @@ class LocalSdkFormat {
     data.add(_app_port);
     data.add(reserved_for_gw);
     data.add([fail_code]);
-    var tlv_size = ByteData(2)..setInt16(0, settings.length);
+    // var tlv_size = ByteData(2)
+    //   ..setInt16(0, settings.length);
+    var _tlv_size = 0;
+    settings.forEach((tlv) {
+      _tlv_size += tlv.toBytes().length;
+    });
     // data.add([0x00, 0x00]);
+    var tlv_size = ByteData(4)
+        ..setInt32(0, _tlv_size);
     data.add(tlv_size.buffer.asUint8List());
-    // settings.forEach((TLV element) { })
     settings.forEach((element) {
       data.add(element.toBytes());
     });
@@ -303,14 +263,22 @@ class LocalSdkFormat {
 }
 
 void main() async {
+  // parse_g1_scene_get_all_info_response();
+  print('kG1SceneGetAllInfoUDPResponse.len ${kG1SceneGetAllInfoUDPResponse.length}');
+  await test_g1_op_cmd();
+}
+
+void test_g1_op_cmd() async {
   print('test op_cmd ');
   var endpoint = Endpoint.any();
   var client = await UDP.bind(endpoint);
   print('local ${client.socket.address} port ${client.socket.port}');
   var op_cmd = LocalSdkFormat.gw_list_all_request(
       InternetAddress('192.168.50.127'), 11188);
-  var _data = op_cmd.toBytes();
-  print('op_cmd ${_data}');
+  var _data = Uint8List.fromList(op_cmd.toBytes());
+  // _data = Uint8List.fromList(kG1SceneGetAllInfoUDPRequest);
+  print('op_cmd ${_data}, len ${_data.length}');
+  print('sample ${kG1SceneGetAllInfoUDPRequest} len ${kG1SceneGetAllInfoUDPRequest.length}');
   var len = await client.send(_data,
       Endpoint.unicast(InternetAddress('192.168.50.127'), port: Port(11188)));
   print('data sent, len $len');
@@ -324,32 +292,32 @@ void main() async {
       });
       print('remote hex data: $str');
       print('remote data ${datagram.data}');
-      var resp = LocalSdkFormat.fromPdu(datagram.data);
-      print('reserved 0x${resp.reserved.toRadixString(16)}');
-      print('len 0x${resp.len.toRadixString(16)}');
-      print('opcode 0x${resp.opcode.toRadixString(16)}');
-      print('version 0x${resp.version.toRadixString(16)}');
-      print('magic_id 0x${resp.magic_id.toRadixString(16)}');
-      print('gw_id ${resp.gw_id}');
-      print('app_id ${resp.app_id}');
-      print('admin ${resp.admin}');
-      print('password ${resp.password}');
-      print('app_ip ${resp.app_ip}');
-      print('app_port ${resp.app_port}');
-      print('reserved_for_gw ${resp.reserved_for_gw}');
-      print('fail_code ${resp.fail_code}');
-      print('tlv_size ${resp.tlv_size}');
-      print('settings:');
-      resp.settings.forEach((setting) {
-        print('${setting.toBytes()}');
-      });
-      print('empty ${resp.empty}');
-      print('checksum ${resp.checksum}');
-    }, timeout: Duration(seconds: 10));
+      // var resp = LocalSdkFormat.fromPdu(datagram.data);
+      // print('reserved 0x${resp.reserved.toRadixString(16)}');
+      // print('len 0x${resp.len.toRadixString(16)}');
+      // print('opcode 0x${resp.opcode.toRadixString(16)}');
+      // print('version 0x${resp.version.toRadixString(16)}');
+      // print('magic_id 0x${resp.magic_id.toRadixString(16)}');
+      // print('gw_id ${resp.gw_id}');
+      // print('app_id ${resp.app_id}');
+      // print('admin ${resp.admin}');
+      // print('password ${resp.password}');
+      // print('app_ip ${resp.app_ip}');
+      // print('app_port ${resp.app_port}');
+      // print('reserved_for_gw ${resp.reserved_for_gw}');
+      // print('fail_code ${resp.fail_code}');
+      // print('tlv_size ${resp.tlv_size}');
+      // print('settings:');
+      // resp.settings.forEach((setting) {
+      //   print('${setting.toBytes()}');
+      // });
+      // print('empty ${resp.empty}');
+      // print('checksum ${resp.checksum}');
+    }, timeout: Duration(seconds: 5));
   }
 }
 
-void _main() async {
+void test_search_op_request() async {
   print('= test search_op_request =');
   var endpoint = Endpoint.any();
   var client = await UDP.bind(endpoint);
@@ -405,6 +373,34 @@ void _main() async {
   }
   print('listen isTimeout $isTimeout');
   if (!client.closed) client.close();
+}
+
+void parse_g1_scene_get_all_info_response() {
+  var test_pdu = kG1SceneGetAllInfoUDPResponse;
+  print('test_pdu len ${test_pdu.length}');
+  var resp = LocalSdkFormat.fromPdu(
+      Uint8List.fromList(test_pdu)
+  );
+  print('reserved 0x${resp.reserved.toRadixString(16)}');
+  print('len 0x${resp.len.toRadixString(16)}');
+  print('opcode 0x${resp.opcode.toRadixString(16)}');
+  print('version 0x${resp.version.toRadixString(16)}');
+  print('magic_id 0x${resp.magic_id.toRadixString(16)}');
+  print('gw_id ${resp.gw_id}');
+  print('app_id ${resp.app_id}');
+  print('admin ${resp.admin}');
+  print('password ${resp.password}');
+  print('app_ip ${resp.app_ip}');
+  print('app_port ${resp.app_port}');
+  print('reserved_for_gw ${resp.reserved_for_gw}');
+  print('fail_code ${resp.fail_code}');
+  print('tlv_size ${resp.tlv_size}');
+  print('settings:');
+  resp.settings.forEach((setting) {
+    print('${setting.toBytes()}');
+  });
+  print('empty ${resp.empty}');
+  print('checksum ${resp.checksum}');
 }
 
 //[0, 255, 1, 2, 1, 119, 10, 119, 30, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 208, 201, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 50, 55, 54, 56, 0, 1, 83, 77, 84, 80, 80, 79]
