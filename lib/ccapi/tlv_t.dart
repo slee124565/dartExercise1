@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:ffi';
 import 'dart:typed_data';
 
 import 'package:dartExercise1/ccapi/constants.dart';
@@ -46,26 +45,34 @@ class TLV {
     return TLV.from_type_value(type: kTYPE_ZWAVE_SCENE_GET_ALL_INFO);
   }
 
+  factory TLV.fromPdu(Uint8List pdu) {
+    var _len = pdu.sublist(2, 4).buffer.asInt16List()[0];
+    assert(_len == (pdu.length - 4));
+    // assert ();
+    return TLV(
+        type: pdu.sublist(0, 2),
+        len: pdu.sublist(2, 4),
+        value: pdu.sublist(4, pdu.length));
+  }
+
   static List<TLV> from_settings(Uint8List pdu) {
     var _settings = <TLV>[];
     var n = 0;
     while ((n + 4) < pdu.length) {
-      var _len =
-          ByteData.sublistView(pdu, n + 2, n + 4).getUint16(0);
+      var _len = ByteData.sublistView(pdu, n + 2, n + 4).getUint16(0);
       var _type = ByteData.sublistView(pdu, n, n + 2).getUint16(0);
-      var _seq_no = ByteData.sublistView(pdu, n+4, n+8).getUint32(0);
+      var _seq_no = ByteData.sublistView(pdu, n + 4, n + 8).getUint32(0);
       print('tlv type $_type from ${pdu.sublist(n, n + 2)}');
       print('tlv len $_len from ${pdu.sublist(n + 2, n + 4)}');
-      print('tlv seq_no $_seq_no from ${pdu.sublist(n+4, n+8)}');
+      print('tlv seq_no $_seq_no from ${pdu.sublist(n + 4, n + 8)}');
       print('tlv value ${pdu.sublist(n + 8, n + 4 + _len)}');
       // print('tlv pdu ${pdu.sublist(n + 4, n + 4 + _len)}');
       if (_type > 0 || _len > 0) {
         if (_type == kTYPE_ZWAVE_SCENE_GET_ALL_INFO) {
           var tlv_scene = ZWaveScene(
-            type: pdu.sublist(n, n + 2),
-            len: pdu.sublist(n + 2, n + 4),
-            value: pdu.sublist(n + 8, n + 4 + _len)
-          );
+              type: pdu.sublist(n, n + 2),
+              len: pdu.sublist(n + 2, n + 4),
+              value: pdu.sublist(n + 8, n + 4 + _len));
           // var zw_scene = ZWaveScene.fromPdu(pdu.sublist(n + 4, n + 4 + _len));
           print('scene id ${tlv_scene.scene_id} '
               'name ${Utf8Decoder().convert(tlv_scene.name)}');
@@ -104,4 +111,14 @@ class TLV {
   Uint8List type;
   Uint8List len;
   Uint8List value;
+}
+
+class OpSearchResponseTLV extends TLV {
+  OpSearchResponseTLV({Uint8List type, Uint8List len, Uint8List value})
+      : super(type: type, len: len, value: value);
+
+  factory OpSearchResponseTLV.fromPdu(Uint8List pdu) {
+   var op_tvl = TLV.fromPdu(pdu);
+   return op_tvl;
+  }
 }

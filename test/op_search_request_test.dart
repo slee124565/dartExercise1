@@ -24,7 +24,7 @@ void main() async {
       });
       print('remote hex data: $str');
       print('remote data ${datagram.data}');
-      var resp = LocalSdkFormat.fromPdu(datagram.data);
+      var resp = LocalSdkFormat.fromBasePdu(datagram.data);
       print('reserved 0x${resp.reserved.toRadixString(16)}');
       print('len 0x${resp.len.toRadixString(16)}');
       print('opcode 0x${resp.opcode.toRadixString(16)}');
@@ -40,7 +40,7 @@ void main() async {
       print('fail_code ${resp.fail_code}');
       print('tlv_size ${resp.tlv_size}');
       print('settings:');
-      resp.settings.forEach((setting) {
+      resp.tlv_settings.forEach((setting) {
         print('${setting.toBytes()}');
       });
       print('empty ${resp.empty}');

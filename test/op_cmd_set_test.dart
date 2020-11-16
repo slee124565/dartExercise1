@@ -43,7 +43,7 @@ void main() async {
       });
       // print('remote hex data: $str');
       print('remote data ${datagram.data}');
-      var resp = LocalSdkFormat.fromPdu(datagram.data);
+      var resp = LocalSdkFormat.fromBasePdu(datagram.data);
       // print('reserved 0x${resp.reserved.toRadixString(16)}');
       // print('len 0x${resp.len.toRadixString(16)}');
       // print('opcode 0x${resp.opcode.toRadixString(16)}');

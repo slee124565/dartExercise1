@@ -15,73 +15,6 @@ const K_TYPE_ZWAVE_SCENE_GET_ALL_INFO = 227;
 const K_TYPE_SEARCH_EXT_GATEWAY_INFO = 265;
 
 class LocalSdkFormat {
-  // LocalSdkFormat({this.opcode});
-  @Uint8()
-  static int _seq_no;
-
-  @Uint8()
-  int reserved = 0x00;
-
-  @Uint8()
-  int len = 0x00;
-
-  @Uint8()
-  int seq_no;
-
-  @Uint8()
-  int opcode;
-
-  @Uint8()
-  int version = 1;
-
-  @Uint8()
-  int magic_id = 0x88;
-
-  // Pointer<Uint8> gw_id;
-  var _gw_id = Uint8List(3);
-
-  // Pointer<Uint8> app_id;
-  var app_id = Uint8List(4);
-
-  // Pointer<Uint8> admin;
-  var _admin = Uint8List(20);
-
-  // Pointer<Uint8> password;
-  var _password = Uint8List(20);
-
-  // Pointer<Uint8> app_ip;
-  var app_ip = Uint8List(4);
-
-  // Pointer<Uint8> app_port;
-  var _app_port = Uint8List(2);
-
-  int get app_port {
-    // print('$_app_port ${_app_port[0].toRadixString(16)}');
-    // print('${_app_port[0].toRadixString(16)}, ${_app_port[1].toRadixString(16)}');
-    // print('${ByteData.sublistView(_app_port).getUint16(0).toRadixString(16)}');
-    // var _value = BytesBuilder().add(_app_port);
-    return ByteData.sublistView(_app_port).getUint16(0);
-    // return Uint16List.fromList(_app_port).buffer.asUint16List()[0];
-  }
-
-  // Pointer<Uint8> reserved_for_gw;
-  var reserved_for_gw = Uint8List(4);
-
-  @Uint8()
-  int fail_code = 0x88;
-
-  @Uint32()
-  int tlv_size;
-
-  // Pointer<Uint8> settings;
-  // var settings = Uint8List(4);
-  List<TLV> settings;
-
-  @Uint8()
-  int empty;
-
-  @Uint8()
-  int checksum;
 
   LocalSdkFormat._();
 
@@ -112,7 +45,7 @@ class LocalSdkFormat {
     return String.fromCharCodes(_password);
   }
 
-  factory LocalSdkFormat.fromPdu(Uint8List pdu) {
+  factory LocalSdkFormat.fromBasePdu(Uint8List pdu) {
     var _data = LocalSdkFormat._();
     var index = 0;
     _data.reserved = pdu[index++];
@@ -136,35 +69,75 @@ class LocalSdkFormat {
     _data.reserved_for_gw = pdu.sublist(index, index + 4);
     index += 4;
     _data.fail_code = pdu[index++];
-    // _data.tlv_size = pdu.sublist(index, index + 2).buffer.asUint16List()[0];
     _data.tlv_size = ByteData.sublistView(pdu, index, index + 4).getUint32(0);
-    print(
-        'data ${pdu.sublist(index, index + 4)} as tlv_szie ${_data.tlv_size}');
+    assert (_data.tlv_size > 0);
     index += 4;
-    // _data.settings = pdu.sublist(index, index + 4);
-    // print('debug index $index remain data ${pdu.sublist(index)}');
-    if (_data.tlv_size > 0) {
-      _data.settings = TLV.from_settings(pdu.sublist(index));
-      index += _data.tlv_size;
-      // _data.settings.forEach((setting) {
-      //   index += setting.toBytes().length;
-      // });
-    } else {
-      _data.settings = [];
-      print('warning tlv_size 0');
-    }
-    // print('[empty] field index $index remain data ${pdu.sublist(index)}');
-    // _data.settings = pdu.sublist(index, index + 4);
+    _data.settings = pdu.sublist(index, index+_data.tlv_size);
     _data.empty = pdu[index++];
     _data.checksum = pdu[index++];
-    if (index < pdu.length) {
-      print('pdu not parsing data bytes ${pdu.sublist(index)}');
-      print('pdu len ${pdu.length}. last index: $index');
-    } else {
-      print('pdu parsing matched spec');
-    }
+    assert (index == pdu.length);
     return _data;
   }
+
+  factory LocalSdkFormat.fromOpSearchResponse(Uint8List resp_pdu) {
+    var op_resp = LocalSdkFormat.fromBasePdu(resp_pdu);
+    // op_resp.settings = TLV.
+    return op_resp;
+  }
+
+  // factory LocalSdkFormat.fromPdu(Uint8List pdu) {
+  //   var _data = LocalSdkFormat._();
+  //   var index = 0;
+  //   _data.reserved = pdu[index++];
+  //   _data.len = pdu[index++];
+  //   _data.seq_no = pdu[index++];
+  //   _data.opcode = pdu[index++];
+  //   _data.version = pdu[index++];
+  //   _data.magic_id = pdu[index++];
+  //   _data._gw_id = pdu.sublist(index, index + 3);
+  //   index += 3;
+  //   _data.app_id = pdu.sublist(index, index + 4);
+  //   index += 4;
+  //   _data._admin = pdu.sublist(index, index + 20);
+  //   index += 20;
+  //   _data._password = pdu.sublist(index, index + 20);
+  //   index += 20;
+  //   _data.app_ip = pdu.sublist(index, index + 4);
+  //   index += 4;
+  //   _data._app_port = pdu.sublist(index, index + 2);
+  //   index += 2;
+  //   _data.reserved_for_gw = pdu.sublist(index, index + 4);
+  //   index += 4;
+  //   _data.fail_code = pdu[index++];
+  //   // _data.tlv_size = pdu.sublist(index, index + 2).buffer.asUint16List()[0];
+  //   _data.tlv_size = ByteData.sublistView(pdu, index, index + 4).getUint32(0);
+  //   print(
+  //       'data ${pdu.sublist(index, index + 4)} as tlv_szie ${_data.tlv_size}');
+  //   index += 4;
+  //   // _data.settings = pdu.sublist(index, index + 4);
+  //   // print('debug index $index remain data ${pdu.sublist(index)}');
+  //   if (_data.tlv_size > 0) {
+  //     _data.settings = TLV.from_settings(pdu.sublist(index));
+  //     index += _data.tlv_size;
+  //     // _data.settings.forEach((setting) {
+  //     //   index += setting.toBytes().length;
+  //     // });
+  //   } else {
+  //     _data.settings = [];
+  //     print('warning tlv_size 0');
+  //   }
+  //   // print('[empty] field index $index remain data ${pdu.sublist(index)}');
+  //   // _data.settings = pdu.sublist(index, index + 4);
+  //   _data.empty = pdu[index++];
+  //   _data.checksum = pdu[index++];
+  //   if (index < pdu.length) {
+  //     print('pdu not parsing data bytes ${pdu.sublist(index)}');
+  //     print('pdu len ${pdu.length}. last index: $index');
+  //   } else {
+  //     print('pdu parsing matched spec');
+  //   }
+  //   return _data;
+  // }
 
   static Uint8List gw_id_encode(String gw_id_str) {
     // todo: gw_id_encode not implement
@@ -202,7 +175,7 @@ class LocalSdkFormat {
     op_cmd._app_port = _port.buffer.asUint8List();
     op_cmd.reserved_for_gw = Uint8List(4);
     op_cmd.fail_code = 0x00;
-    op_cmd.settings = settings;
+    op_cmd.tlv_settings = settings;
     op_cmd.empty = 0x00;
     op_cmd.checksum = 0x00;
     return op_cmd;
@@ -270,7 +243,7 @@ class LocalSdkFormat {
     // op_cmd.tlv_size = 0x04;
     // op_cmd.settings = Uint8List.fromList([0, 235, 0, 0]);
     // var _settings = TLV.from_type_value(type: K_TYPE_ZWAVE_SCENE_GET_ALL_INFO);
-    op_cmd.settings = [TLV.from_type_value(type: tlv_type)];
+    op_cmd.tlv_settings = [TLV.from_type_value(type: tlv_type)];
     // op_cmd.settings = Uint8List.fromList(
     //     [0, K_TYPE_ZWAVE_SCENE_GET_ALL_INFO, 0, 0, 0, 0, 0, 0]);
     // op_cmd.settings = Uint8List.fromList([0x01, 0x09, 0, 0, 0 ,0 ,0 ,0]);
@@ -298,7 +271,7 @@ class LocalSdkFormat {
     op_cmd.reserved_for_gw = Uint8List(4);
     op_cmd.fail_code = 0x00;
     op_cmd.tlv_size = 0x00;
-    op_cmd.settings = [
+    op_cmd.tlv_settings = [
       TLV.from_type_value(type: 0, value: Uint8List.fromList([0, 0, 0, 0]))
     ];
     op_cmd.empty = 0x00;
@@ -320,19 +293,73 @@ class LocalSdkFormat {
     // var tlv_size = ByteData(2)
     //   ..setInt16(0, settings.length);
     var _tlv_size = 0;
-    settings.forEach((tlv) {
+    tlv_settings.forEach((tlv) {
       _tlv_size += tlv.toBytes().length;
     });
     // data.add([0x00, 0x00]);
     var tlv_size = ByteData(4)..setInt32(0, _tlv_size);
     data.add(tlv_size.buffer.asUint8List());
-    settings.forEach((element) {
+    tlv_settings.forEach((element) {
       data.add(element.toBytes());
     });
     // data.add(settings);
     data.add([empty, checksum]);
     return data.toBytes();
   }
+
+  @Uint8()
+  static int _seq_no;
+
+  @Uint8()
+  int reserved = 0x00;
+
+  @Uint8()
+  int len = 0x00;
+
+  @Uint8()
+  int seq_no;
+
+  @Uint8()
+  int opcode;
+
+  @Uint8()
+  int version = 1;
+
+  @Uint8()
+  int magic_id = 0x88;
+
+  Uint8List _gw_id;
+
+  Uint8List app_id;
+
+  Uint8List _admin;
+
+  Uint8List _password;
+
+  Uint8List app_ip;
+
+  Uint8List _app_port;
+
+  int get app_port {
+    return ByteData.sublistView(_app_port).getUint16(0);
+  }
+
+  Uint8List reserved_for_gw;
+
+  @Uint8()
+  int fail_code;
+
+  @Uint32()
+  int tlv_size;
+
+  List<TLV> tlv_settings;
+  Uint8List settings;
+
+  @Uint8()
+  int empty;
+
+  @Uint8()
+  int checksum;
 }
 
 void main() async {
@@ -423,7 +450,7 @@ void test_search_op_request() async {
       });
       print('remote hex data: $str');
       print('remote data ${datagram.data}');
-      var resp = LocalSdkFormat.fromPdu(datagram.data);
+      var resp = LocalSdkFormat.fromBasePdu(datagram.data);
       print('reserved 0x${resp.reserved.toRadixString(16)}');
       print('len 0x${resp.len.toRadixString(16)}');
       print('opcode 0x${resp.opcode.toRadixString(16)}');
@@ -439,7 +466,7 @@ void test_search_op_request() async {
       print('fail_code ${resp.fail_code}');
       print('tlv_size ${resp.tlv_size}');
       print('settings:');
-      resp.settings.forEach((setting) {
+      resp.tlv_settings.forEach((setting) {
         print('${setting.toBytes()}');
       });
       print('empty ${resp.empty}');
@@ -453,7 +480,7 @@ void test_search_op_request() async {
 void parse_g1_scene_get_all_info_response() {
   var test_pdu = kG1SceneGetAllInfoUDPResponse;
   print('test_pdu len ${test_pdu.length}');
-  var resp = LocalSdkFormat.fromPdu(Uint8List.fromList(test_pdu));
+  var resp = LocalSdkFormat.fromBasePdu(Uint8List.fromList(test_pdu));
   print('reserved 0x${resp.reserved.toRadixString(16)}');
   print('len 0x${resp.len.toRadixString(16)}');
   print('opcode 0x${resp.opcode.toRadixString(16)}');
@@ -469,7 +496,7 @@ void parse_g1_scene_get_all_info_response() {
   print('fail_code ${resp.fail_code}');
   print('tlv_size ${resp.tlv_size}');
   print('settings:');
-  resp.settings.forEach((setting) {
+  resp.tlv_settings.forEach((setting) {
     print('${setting.toBytes()},');
   });
   print('empty ${resp.empty}');

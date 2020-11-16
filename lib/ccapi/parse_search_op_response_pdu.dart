@@ -11,7 +11,7 @@ void main() {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 50, 55, 54, 56, 0, 1, 83, 77, 84,
     80, 80, 79]);
   print('${pdu.length}');
-  var resp = LocalSdkFormat.fromPdu(pdu);
+  var resp = LocalSdkFormat.fromBasePdu(pdu);
   print('reserved 0x${resp.reserved.toRadixString(16)}');
   print('len 0x${resp.len.toRadixString(16)}');
   print('opcode 0x${resp.opcode.toRadixString(16)}');
@@ -26,7 +26,7 @@ void main() {
   print('reserved_for_gw ${resp.reserved_for_gw}');
   print('fail_code ${resp.fail_code}');
   print('tlv_size ${resp.tlv_size}');
-  print('settings ${resp.settings}');
+  print('settings ${resp.tlv_settings}');
   print('empty ${resp.empty}');
   print('checksum ${resp.checksum}');
 }
