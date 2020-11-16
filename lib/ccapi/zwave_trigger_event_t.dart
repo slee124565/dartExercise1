@@ -34,15 +34,29 @@ class ZWaveTriggerEvent {
     triggered_sec = ByteData.sublistView(pdu, n, n+4).getInt32(0);
     n += 4;
     cmd_status = CmdStatus.fromPdu(pdu.sublist(n));
-    print('parsing ZWaveTriggerEvent $pdu');
-    print('node_id ${node_id}');
-    print('room_id ${room_id}');
-    print('and_or ${and_or}');
-    print('camera_event ${camera_event}');
-    print('remain_sec ${remain_sec}');
-    print('compare ${compare}');
-    print('reserved ${reserved}');
-    print('triggered_sec ${triggered_sec}');
+    // print('parsing ZWaveTriggerEvent $pdu');
+    // print('node_id ${node_id}');
+    // print('room_id ${room_id}');
+    // print('and_or ${and_or}');
+    // print('camera_event ${camera_event}');
+    // print('remain_sec ${remain_sec}');
+    // print('compare ${compare}');
+    // print('reserved ${reserved}');
+    // print('triggered_sec ${triggered_sec}');
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'node_id': node_id,
+      'room_id': room_id,
+      'and_or': and_or,
+      'camera_event': camera_event,
+      'remain_sec': remain_sec,
+      'compare': compare,
+      'reserved': reserved,
+      'triggered_sec': triggered_sec,
+      'cmd_status': cmd_status.toJson(),
+    };
   }
 
   @Uint8()

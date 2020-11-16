@@ -27,13 +27,24 @@ class EventTriggerTime {
     start_time = ByteData.sublistView(pdu,n, n+4).getInt32(0);
     n += 4;
     end_time = ByteData.sublistView(pdu,n, n+4).getInt32(0);
-    print('parsing EventTriggerTime $pdu');
-    print('weekday_flag $weekday_flag');
-    print('schedule_method $schedule_method');
-    print('house_mode $house_mode');
-    print('reserved $reserved');
-    print('start_time $start_time');
-    print('end_time $end_time');
+    // print('parsing EventTriggerTime $pdu');
+    // print('weekday_flag $weekday_flag');
+    // print('schedule_method $schedule_method');
+    // print('house_mode $house_mode');
+    // print('reserved $reserved');
+    // print('start_time $start_time');
+    // print('end_time $end_time');
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'weekday_flag': weekday_flag,
+      'schedule_method': schedule_method,
+      'house_mode': house_mode,
+      'reserved': reserved,
+      'start_time': start_time,
+      'end_time': end_time
+    };
   }
 
   @Uint8()

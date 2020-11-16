@@ -20,11 +20,15 @@ class CmdStatus {
     cmd_class = pdu[n++];
     cmd = pdu[n++];
     parameters = pdu.sublist(n);
-    print('parsing CmdSTatus $pdu');
-    print('cmdLen $cmdLen');
-    print('cmd_class $cmd_class');
-    print('cmd $cmd');
-    print('parameters $parameters');
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'cmdLen': cmdLen,
+      'cmd_class': cmd_class,
+      'cmd': cmd,
+      'parameters': parameters
+    };
   }
 
   @Uint8()
