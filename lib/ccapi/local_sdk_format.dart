@@ -392,6 +392,14 @@ class LocalSdkFormat {
   int checksum;
 }
 
+class ZwaveSceneGetAllInfoResponseSettings {
+
+}
+
+class ZwaveNodeAllInfoResponseSettings {
+
+}
+
 void main() async {
   // parse_g1_scene_get_all_info_response();
   // print('kG1SceneGetAllInfoUDPResponse.len ${kG1SceneGetAllInfoUDPResponse.length}');
