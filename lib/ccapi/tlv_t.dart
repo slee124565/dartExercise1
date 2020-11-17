@@ -112,13 +112,3 @@ class TLV {
   Uint8List len;
   Uint8List value;
 }
-
-class OpSearchResponseTLV extends TLV {
-  OpSearchResponseTLV({Uint8List type, Uint8List len, Uint8List value})
-      : super(type: type, len: len, value: value);
-
-  factory OpSearchResponseTLV.fromPdu(Uint8List pdu) {
-   var op_tvl = TLV.fromPdu(pdu);
-   return op_tvl;
-  }
-}

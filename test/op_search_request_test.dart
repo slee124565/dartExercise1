@@ -14,6 +14,10 @@ void main() async {
       op_cmd.toBytes(), Endpoint.broadcast(port: Port(11188)));
   print('op_search data ${op_cmd.toBytes()}');
   print('udp data sent len $len');
+  len = await client.send(
+      op_cmd.toBytes(), Endpoint.broadcast(port: Port(11188)));
+  print('op_search data ${op_cmd.toBytes()}');
+  print('udp data sent len $len');
   var isTimeout = false;
   while (!isTimeout) {
     isTimeout = await client.listen((datagram) async {
@@ -39,13 +43,10 @@ void main() async {
       print('reserved_for_gw ${resp.reserved_for_gw}');
       print('fail_code ${resp.fail_code}');
       print('tlv_size ${resp.tlv_size}');
-      print('settings:');
-      resp.tlv_settings.forEach((setting) {
-        print('${setting.toBytes()}');
-      });
+      print('settings ${resp.settings}');
       print('empty ${resp.empty}');
       print('checksum ${resp.checksum}');
-    }, timeout: Duration(seconds: 10));
+    }, timeout: Duration(seconds: 3));
   }
   print('listen isTimeout $isTimeout');
   if (!client.closed) client.close();

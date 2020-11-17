@@ -79,8 +79,9 @@ class LocalSdkFormat {
     return _data;
   }
 
-  factory LocalSdkFormat.fromOpSearchResponse(Uint8List resp_pdu) {
+  factory LocalSdkFormat.fromTypeZwaveSceneGetAllInfoResponse(Uint8List resp_pdu) {
     var op_resp = LocalSdkFormat.fromBasePdu(resp_pdu);
+
     // op_resp.settings = TLV.
     return op_resp;
   }
@@ -305,6 +306,35 @@ class LocalSdkFormat {
     // data.add(settings);
     data.add([empty, checksum]);
     return data.toBytes();
+  }
+
+  @override
+  String toString() {
+    return '${toJson()}';
+  }
+
+  Map<String, dynamic> toJson() {
+    var data = {
+      'reserved': reserved,
+      'len': len,
+      'seq_no': seq_no,
+      'opcode': opcode,
+      'version': version,
+      'magic_id': magic_id,
+      'gw_id': gw_id,
+      'app_id': app_id,
+      'admin': admin,
+      'password': password,
+      'app_ip': app_ip,
+      'app_port': app_port,
+      'reserved_for_gw': reserved_for_gw,
+      'fail_code': fail_code,
+      'tlv_size': tlv_size,
+      'settings': settings,
+      'empty': empty,
+      'checksum': checksum
+    };
+    return data;
   }
 
   @Uint8()
