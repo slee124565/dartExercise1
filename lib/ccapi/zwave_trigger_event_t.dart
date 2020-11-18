@@ -16,7 +16,7 @@ ZWAVE_TRIGGER_EVENT_T;
 import 'dart:ffi';
 import 'dart:typed_data';
 
-import 'command_status_t.dart';
+import 'cmd_status_t.dart';
 
 class ZWaveTriggerEvent {
   static int length = 40;

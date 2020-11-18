@@ -1,18 +1,13 @@
-// typedef  struct {
-// unsigned  char  cmdLen  ;
-// unsigned  char  cmd_class ;
-// unsigned  char  cmd  ;
-// unsigned  char  parameters[MAX_CMD_STATUS_SIZE+1]  ;
-// }  CMD_STATUS_T  ;
 
 import 'dart:ffi';
 
 import 'dart:typed_data';
 
-import 'constants.dart';
+// import 'constants.dart';
+
+const kMAX_CMD_STATUS_SIZE = 24;
 
 class CmdStatus {
-  static int length = kMAX_CMD_STATUS_SIZE+4;
 
   CmdStatus.fromPdu(Uint8List pdu) {
     var n = 0;
@@ -39,3 +34,14 @@ class CmdStatus {
   int cmd;
   Uint8List parameters;
 }
+
+/*
+#define  MAX_CMD_STATUS_SIZE  24
+typedef struct {
+  unsigned char cmdLen;
+  unsigned char cmd_class;
+  unsigned char cmd;
+  unsigned char parameters[MAX_CMD_STATUS_SIZE + 1];
+}
+CMD_STATUS_T;
+*/

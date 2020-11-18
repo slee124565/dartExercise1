@@ -1,9 +1,12 @@
+import 'dart:convert';
 import 'dart:ffi';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:dartExercise1/ccapi/zwave_scene_t.dart';
 import 'package:udp/udp.dart';
 
+import 'constants.dart';
 import 'sample_data.dart';
 import 'tlv_t.dart';
 
@@ -393,11 +396,39 @@ class LocalSdkFormat {
 }
 
 class ZwaveSceneGetAllInfoResponseSettings {
+  ZwaveSceneGetAllInfoResponseSettings._();
 
+  factory ZwaveSceneGetAllInfoResponseSettings.fromSdkResponseSettings(
+      Uint8List pdu) {
+    var obj = ZwaveSceneGetAllInfoResponseSettings._();
+    var n = 0;
+    while ((n + 4) < pdu.length) {
+      var _len = ByteData.sublistView(pdu, n + 2, n + 4).getUint16(0);
+      var _type = ByteData.sublistView(pdu, n, n + 2).getUint16(0);
+      var _seq_no = ByteData.sublistView(pdu, n + 4, n + 8).getUint32(0);
+      // print('tlv type $_type from ${pdu.sublist(n, n + 2)}');
+      // print('tlv len $_len from ${pdu.sublist(n + 2, n + 4)}');
+      // print('tlv seq_no $_seq_no from ${pdu.sublist(n + 4, n + 8)}');
+      // print('tlv value ${pdu.sublist(n + 8, n + 4 + _len)}');
+      // print('tlv pdu ${pdu.sublist(n + 4, n + 4 + _len)}');
+      assert (_type == kTYPE_ZWAVE_SCENE_GET_ALL_INFO);
+      assert (_len > 0);
+      var tlv_scene = ZWaveScene.fromPdu(pdu.sublist(n + 8, n + 4 + _len));
+      // var zw_scene = ZWaveScene.fromPdu(pdu.sublist(n + 4, n + 4 + _len));
+      // print('scene id ${tlv_scene.scene_id} '
+      //     'name ${Utf8Decoder().convert(tlv_scene.name)}');
+      obj.scenes.add(tlv_scene);
+      n += (4 + _len);
+      // print('tlv type $_type added, n set to $n');
+    }
+    // print('settings parsing return at n $n, pdu len ${pdu.length}');
+
+    return obj;
+  }
+  List<ZWaveScene> scenes = [];
 }
 
 class ZwaveNodeAllInfoResponseSettings {
-
 }
 
 void main() async {
