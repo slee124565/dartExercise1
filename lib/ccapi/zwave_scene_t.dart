@@ -7,46 +7,49 @@ import 'tlv_t.dart';
 import 'zwave_action_t.dart';
 import 'zwave_trigger_event_t.dart';
 
-class ZWaveScene extends TLV {
-  ZWaveScene({Uint8List type, Uint8List len, Uint8List value})
-      : super(type: type, len: len, value: value) {
+class ZWaveScene {
+  ZWaveScene._();
+
+  factory ZWaveScene.fromPdu(Uint8List pdu) {
+    var obj = ZWaveScene._();
     var n = 0;
-    name = value.sublist(n, n + kMAX_SCENE_NAME_SIZE);
+    obj.name = pdu.sublist(n, n + kMAX_SCENE_NAME_SIZE);
     n += kMAX_SCENE_NAME_SIZE;
-    scene_id = value[n++];
-    num_events = value[n++];
-    num_actions = value[n++];
-    disabled = value[n++];
-    scene_status = value[n++];
-    type_flag = value[n++];
-    added_function = value[n++];
-    reserved = value[n++];
-    time =
-        EventTriggerTime.fromPdu(value.sublist(n, n + EventTriggerTime.length));
+    obj.scene_id = pdu[n++];
+    obj.num_events = pdu[n++];
+    obj.num_actions = pdu[n++];
+    obj.disabled = pdu[n++];
+    obj.scene_status = pdu[n++];
+    obj.type_flag = pdu[n++];
+    obj.added_function = pdu[n++];
+    obj.reserved = pdu[n++];
+    obj.time =
+        EventTriggerTime.fromPdu(pdu.sublist(n, n + EventTriggerTime.length));
     n += EventTriggerTime.length;
-    events = [];
+    obj.events = [];
     var num = 0;
-    while (num < num_events) {
-      events.add(ZWaveTriggerEvent.fromPdu(
-          value.sublist(n, n + ZWaveTriggerEvent.length)));
+    while (num < obj.num_events) {
+      obj.events.add(ZWaveTriggerEvent.fromPdu(
+          pdu.sublist(n, n + ZWaveTriggerEvent.length)));
       n += ZWaveTriggerEvent.length;
       num++;
     }
     num = 0;
-    actions = [];
-    while (num < num_actions) {
-      actions.add(ZWaveAction.fromPdu(value.sublist(n, n + ZWaveAction.length)));
+    obj.actions = [];
+    while (num < obj.num_actions) {
+      obj.actions.add(ZWaveAction.fromPdu(pdu.sublist(n, n + ZWaveAction.length)));
       n += ZWaveAction.length;
       num++;
     }
-    if (n < value.length) {
-      print('ZWaveScene fromPdu parsing remain pdu ${value.sublist(n)}');
+    if (n < pdu.length) {
+      print('ZWaveScene fromPdu parsing remain pdu ${pdu.sublist(n)}');
     }
+    return obj;
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'name': Utf8Decoder().convert(name),
+      'name': Utf8Decoder().convert(name.sublist(0, name.indexOf(0))),
       'scene_id': scene_id,
       'num_events': num_events,
       'num_actions': num_actions,

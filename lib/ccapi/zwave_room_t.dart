@@ -1,0 +1,7 @@
+
+
+class ZWaveRoom {
+  ZWaveRoom._();
+
+  
+}
