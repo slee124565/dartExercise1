@@ -5,7 +5,7 @@ import 'dart:typed_data';
 import 'cmd_status_t.dart';
 
 class ZWaveAction {
-  static int length = 4+CmdStatus.length;
+  static int length = 4+kMAX_CMD_STATUS_SIZE+4;
 
   ZWaveAction.fromPdu(Uint8List pdu) {
     var n = 0;
