@@ -5,9 +5,34 @@ import 'dart:ffi';
 import 'dart:typed_data';
 
 import 'package:dartExercise1/ccapi/cmd_status_t.dart';
+import 'package:dartExercise1/ccapi/constants.dart';
 
 class NodeAllInfo {
-  NodeAllInfo._();
+  NodeAllInfo._(){
+   cmd_status = [];
+  }
+
+  factory NodeAllInfo.fromPdu(Uint8List pdu) {
+    var obj = NodeAllInfo._();
+    var n = 0;
+    obj.capability = pdu[n++];
+    obj.num_endpoints = pdu[n++];
+    obj.inactive_hours = pdu[n++];
+    obj.basic = pdu[n++];
+    obj.generic = pdu[n++];
+    obj.specific = pdu[n++];
+    obj.node_id = pdu[n++];
+    obj.node_name = pdu.sublist(n, n+kMAX_NODE_NAME_SIZE);
+    n += kMAX_NODE_NAME_SIZE;
+    obj.num_cmds = pdu[n++];
+    while (n < pdu.length) {
+      var cmd_status_len = pdu[n];
+      obj.cmd_status.add(CmdStatus.fromPdu(pdu.sublist(n, n+cmd_status_len)));
+      n += cmd_status_len;
+    }
+
+    return obj;
+  }
 
   @Uint8()
   int capability;
@@ -25,6 +50,8 @@ class NodeAllInfo {
   @Uint8()
   int node_id;
   Uint8List node_name;
+  @Uint8()
+  int num_cmds;
   List<CmdStatus> cmd_status;
 }
 /*

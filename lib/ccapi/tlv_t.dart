@@ -19,7 +19,7 @@ class TLV {
     // } else {
     //   this.value = value;
     // }
-    print('from_type_value ${this.value}');
+    // print('from_type_value ${this.value}');
     var _len = ByteData(2)..setInt16(0, this.value.length);
     len = _len.buffer.asUint8List();
   }

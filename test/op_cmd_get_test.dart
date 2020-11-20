@@ -13,6 +13,7 @@ void main() async {
   var tlv;
   // tlv = TLV.zwave_node_all_info();
   tlv = TLV.from_type_value(type: kTYPE_ZWAVE_ROOM_GET_ALL_INFO);
+  tlv = TLV.from_type_value(type: kTYPE_ZWAVE_NODE_ALL_INFO);
   // tlv = TLV.zwave_total_nodes();
   dotenv.load();
   print('test gw ip ${dotenv.env['test_gw_ip']}');
@@ -21,7 +22,7 @@ void main() async {
     gw_id: '011120031',
     account: 'admin',
     password: 'admin',
-    ip_address: '192.168.50.127',
+    ip_address: '0.0.0.0',
     port: 11188,
     settings: [tlv],
   );
@@ -46,7 +47,7 @@ void main() async {
       datagram.data.forEach((element) {
         str += '0x${element.toRadixString(16)}, ';
       });
-      print('remote hex data: $str');
+      // print('remote hex data: $str');
       print('remote data ${datagram.data}');
       var resp = LocalSdkFormat.fromBasePdu(datagram.data);
       print('response ${resp}');

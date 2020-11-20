@@ -14,11 +14,6 @@ class ZWaveAction {
     camera_action = pdu[n++];
     duration = pdu[n++];
     cmd_status = CmdStatus.fromPdu(pdu.sublist(n));
-    // print('parsing ZWaveAction $pdu');
-    // print('node_id $node_id');
-    // print('room_id $room_id');
-    // print('camera_action $camera_action');
-    // print('duration $duration');
   }
 
   Map<String, dynamic> toJson() {
