@@ -1,8 +1,10 @@
-import 'dart:convert';
+// import 'dart:convert';
 import 'dart:ffi';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:dartExercise1/ccapi/node_all_info_t.dart';
+import 'package:dartExercise1/ccapi/struct_base.dart';
 import 'package:dartExercise1/ccapi/zwave_scene_t.dart';
 import 'package:udp/udp.dart';
 
@@ -395,7 +397,26 @@ class LocalSdkFormat {
   int checksum;
 }
 
-class ZwaveSceneGetAllInfoResponseSettings {
+
+class _ResponseSettingsMultiBase {
+  List toStructSettings(
+      Uint8List resp_settings_pdu, TLVStructBase struct) {
+    var settings = [];
+    var n = 0;
+    while ((n + 4) < resp_settings_pdu.length) {
+      var _len = ByteData.sublistView(resp_settings_pdu, n + 2, n + 4).getUint16(0);
+      var _type = ByteData.sublistView(resp_settings_pdu, n, n + 2).getUint16(0);
+      var _seq_no = ByteData.sublistView(resp_settings_pdu, n + 4, n + 8).getUint32(0);
+      assert (_type == struct.typeId);
+      assert (_seq_no >= 0);
+      settings.add(struct.fromUint8List(resp_settings_pdu.sublist(n + 8, n + 4 + _len)));
+      n += (4 + _len);
+    }
+    return settings;
+  }
+}
+
+class ZwaveSceneGetAllInfoResponseSettings extends _ResponseSettingsMultiBase {
   ZwaveSceneGetAllInfoResponseSettings._();
 
   factory ZwaveSceneGetAllInfoResponseSettings.fromSdkResponseSettings(
@@ -413,6 +434,7 @@ class ZwaveSceneGetAllInfoResponseSettings {
       // print('tlv pdu ${pdu.sublist(n + 4, n + 4 + _len)}');
       assert (_type == kTYPE_ZWAVE_SCENE_GET_ALL_INFO);
       assert (_len > 0);
+      assert (_seq_no >= 0);
       var tlv_scene = ZWaveScene.fromPdu(pdu.sublist(n + 8, n + 4 + _len));
       // var zw_scene = ZWaveScene.fromPdu(pdu.sublist(n + 4, n + 4 + _len));
       // print('scene id ${tlv_scene.scene_id} '
@@ -428,7 +450,31 @@ class ZwaveSceneGetAllInfoResponseSettings {
   List<ZWaveScene> scenes = [];
 }
 
-class ZwaveNodeAllInfoResponseSettings {
+class ZwaveRoomGetAllInfoResponseSettings {
+
+}
+
+class ZwaveNodeAllInfoResponseSettings extends _ResponseSettingsMultiBase {
+  ZwaveNodeAllInfoResponseSettings._();
+
+  factory ZwaveNodeAllInfoResponseSettings.fromSdkResponseSettings(
+      Uint8List pdu) {
+    var obj = ZwaveNodeAllInfoResponseSettings._();
+    var n = 0;
+    while ((n + 4) < pdu.length) {
+      var _len = ByteData.sublistView(pdu, n + 2, n + 4).getUint16(0);
+      var _type = ByteData.sublistView(pdu, n, n + 2).getUint16(0);
+      var _seq_no = ByteData.sublistView(pdu, n + 4, n + 8).getUint32(0);
+      assert (_type == kTYPE_ZWAVE_SCENE_GET_ALL_INFO);
+      assert (_len > 0);
+      assert (_seq_no >= 0);
+      var tlv_node = NodeAllInfo.fromPdu((pdu.sublist(n + 8, n + 4 + _len)));
+      obj.nodes.add(tlv_node);
+      n += (4 + _len);
+    }
+    return obj;
+  }
+  List<NodeAllInfo> nodes = [];
 }
 
 void main() async {
