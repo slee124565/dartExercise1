@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:dartExercise1/ccapi/node_all_info_t.dart';
+import 'package:dartExercise1/ccapi/local_room_t.dart';
 import 'package:dartExercise1/ccapi/struct_base.dart';
 import 'package:dartExercise1/ccapi/zwave_scene_t.dart';
 import 'package:udp/udp.dart';
@@ -451,7 +452,27 @@ class ZwaveSceneGetAllInfoResponseSettings extends _ResponseSettingsMultiBase {
 }
 
 class ZwaveRoomGetAllInfoResponseSettings {
+  ZwaveRoomGetAllInfoResponseSettings._();
 
+  factory ZwaveRoomGetAllInfoResponseSettings.fromSdkResponseSettings(
+      Uint8List pdu
+      ) {
+    var obj = ZwaveRoomGetAllInfoResponseSettings._();
+    var n = 0;
+    while ((n + 4) < pdu.length) {
+      var _len = ByteData.sublistView(pdu, n + 2, n + 4).getUint16(0);
+      var _type = ByteData.sublistView(pdu, n, n + 2).getUint16(0);
+      var _seq_no = ByteData.sublistView(pdu, n + 4, n + 8).getUint32(0);
+      assert (_type == kTYPE_ZWAVE_ROOM_GET_ALL_INFO);
+      assert (_len > 0);
+      assert (_seq_no >= 0);
+      var tlv_room = LocalRoom.fromPdu((pdu.sublist(n + 8, n + 4 + _len)));
+      obj.rooms.add(tlv_room);
+      n += (4 + _len);
+    }
+    return obj;
+  }
+  List<LocalRoom> rooms = [];
 }
 
 class ZwaveNodeAllInfoResponseSettings extends _ResponseSettingsMultiBase {
@@ -465,7 +486,7 @@ class ZwaveNodeAllInfoResponseSettings extends _ResponseSettingsMultiBase {
       var _len = ByteData.sublistView(pdu, n + 2, n + 4).getUint16(0);
       var _type = ByteData.sublistView(pdu, n, n + 2).getUint16(0);
       var _seq_no = ByteData.sublistView(pdu, n + 4, n + 8).getUint32(0);
-      assert (_type == kTYPE_ZWAVE_SCENE_GET_ALL_INFO);
+      assert (_type == kTYPE_ZWAVE_NODE_ALL_INFO);
       assert (_len > 0);
       assert (_seq_no >= 0);
       var tlv_node = NodeAllInfo.fromPdu((pdu.sublist(n + 8, n + 4 + _len)));
