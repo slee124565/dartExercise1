@@ -10,7 +10,7 @@ void main() {
   var resp_settings = ZwaveNodeAllInfoResponseSettings.fromSdkResponseSettings(
       sdk_resp.settings);
   resp_settings.nodes.forEach((node) {
-    print('node ${node.toJons()['node_name']}');
+    print('node ${node.node_id} ${node.toJons()['node_name']}');
   });
 }
 

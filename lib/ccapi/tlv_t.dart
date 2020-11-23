@@ -32,6 +32,19 @@ class TLV {
         type: kTYPE_ZWAVE_SCENE_DO_ACTION, value: _value.buffer.asUint8List());
   }
 
+  factory TLV.zwave_send_data(
+      {int node_id,
+      int cmd_len,
+      int cmd_cls_id,
+      int cmd_id,
+      List<int> cmd_param}) {
+    var _value = [node_id, cmd_len, cmd_cls_id, cmd_id];
+    _value.addAll(cmd_param);
+    return TLV.from_type_value(
+        type: kTYPE_ZWAVE_SEND_DATA,
+        value: Uint8List.fromList(_value));
+  }
+
   factory TLV.zwave_total_nodes() {
     return TLV.from_type_value(type: kTYPE_ZWAVE_TOTAL_NODES);
   }
