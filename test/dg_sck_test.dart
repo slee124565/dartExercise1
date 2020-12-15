@@ -12,6 +12,8 @@ void startUDPServer() async {
   var rawDatagramSocket =
       await RawDatagramSocket.bind(InternetAddress.anyIPv4, 0);
 
+  print(
+      'original broadcastEnabled state ${rawDatagramSocket.broadcastEnabled}');
   rawDatagramSocket.broadcastEnabled = true;
   var length = rawDatagramSocket.send(
       kPDU_OP_SEARCH_REQUEST, InternetAddress('255.255.255.255'), 11188);
@@ -33,3 +35,9 @@ void startUDPServer() async {
     }
   }
 }
+
+/*
+refer to
+https://dev.to/itzmeanjan/service-discovery-within-lan-1cap
+https://rrtutors.com/darttutorials/dart-network-programming
+ */
