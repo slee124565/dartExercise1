@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:dartExercise1/ccapi/constants.dart';
+// import 'package:dartExercise1/ccapi/constants.dart';
 import 'package:dartExercise1/ccapi/local_sdk_format.dart';
 
 // import 'package:dartExercise1/ccapi/samples.dart';
@@ -32,10 +32,10 @@ void main() async {
   print('cmd bytes: ${op_cmd.toBytes()}');
   print('data sent, len $len');
   // op_cmd.seq_no++;
-  len = await client.send(_data,
-      Endpoint.unicast(InternetAddress('192.168.50.127'), port: Port(11188)));
-  print('cmd bytes: ${op_cmd.toBytes()}');
-  print('data sent, len $len');
+  // len = await client.send(_data,
+  //     Endpoint.unicast(InternetAddress('192.168.50.127'), port: Port(11188)));
+  // print('cmd bytes: ${op_cmd.toBytes()}');
+  // print('data sent, len $len');
   var isTimeout = false;
   while (!isTimeout) {
     isTimeout = await client.listen((datagram) async {

@@ -78,10 +78,15 @@ class LocalSdkFormat {
     _data.tlv_size = ByteData.sublistView(pdu, index, index + 4).getUint32(0);
     assert (_data.tlv_size > 0);
     index += 4;
-    _data.settings = pdu.sublist(index, index+_data.tlv_size);
-    _data.empty = pdu[index++];
-    _data.checksum = pdu[index++];
-    assert (index == pdu.length);
+    if ((index+_data.tlv_size) >= pdu.length) {
+      _data.settings = pdu.sublist(index);
+      print('warning: tlv_size exceeds pdu length');
+    } else {
+      _data.settings = pdu.sublist(index, index+_data.tlv_size);
+      _data.empty = pdu[index++];
+      _data.checksum = pdu[index++];
+      assert (index == pdu.length);
+    }
     return _data;
   }
 

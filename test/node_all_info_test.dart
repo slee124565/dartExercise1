@@ -1,10 +1,17 @@
 import 'dart:typed_data';
 
 import 'package:dartExercise1/ccapi/local_sdk_format.dart';
+import 'package:logging/logging.dart';
 
 import 'case_type_samples.dart';
 
 void main() {
+  Logger.root.onRecord.listen((record) {
+    print('${record.level.name}: ${record.time}: ${record.message}');
+  });
+  var logger = Logger('sdklib');
+  logger.info('logging test');
+  return;
   var sdk_resp = LocalSdkFormat.fromTypeZwaveSceneGetAllInfoResponse(
       Uint8List.fromList(kPDU_TYPE_ZWAVE_NODE_ALL_INFO_RESPONSE));
   var resp_settings = ZwaveNodeAllInfoResponseSettings.fromSdkResponseSettings(
