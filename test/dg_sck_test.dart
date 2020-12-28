@@ -22,8 +22,9 @@ void startUDPServer() async {
   await for (RawSocketEvent event in rawDatagramSocket) {
     if (event == RawSocketEvent.read) {
       var datagram = rawDatagramSocket.receive();
-      print('received: ${datagram.address}, ${datagram.port}');
-      print(datagram.data);
+
+      print('received: ${datagram?.address}, ${datagram?.port}');
+      print('data: ${datagram?.data}');
       // print(utf8.decode(rawDatagramSocket
       //     .receive()
       //     .data));

@@ -20,8 +20,42 @@ const K_TYPE_GATEWAY_LIST_ALL = 235;
 const K_TYPE_ZWAVE_SCENE_GET_ALL_INFO = 227;
 const K_TYPE_SEARCH_EXT_GATEWAY_INFO = 265;
 
-class LocalSdkFormat {
+///Operation code enum for GW Local UDP API
+class LocalSdkOP {
+  ///An SDK OP code for App request to search existing GW
+  static const LocalSdkOP searchOpRequest = LocalSdkOP._(1);
 
+  ///An SDK OP code for GW to response [searchOpRequest]
+  static const LocalSdkOP searchOpResponse = LocalSdkOP._(2);
+
+  ///An SKD OP code for App to set GW settings
+  static const LocalSdkOP setAnySettingRequestOp = LocalSdkOP._(60);
+
+  ///An SKD OP code for GW to response to [setAnySettingRequestOp]
+  static const LocalSdkOP setAnySettingResponseOp = LocalSdkOP._(61);
+
+  ///An SKD OP code for GW to response error to [setAnySettingRequestOp]
+  static const LocalSdkOP setAnySettingFailOp = LocalSdkOP._(62);
+
+  ///An SKD OP code for App to get GW settings
+  static const LocalSdkOP getAnySettingRequestOp = LocalSdkOP._(63);
+
+  ///An SKD OP code for GW to response to [getAnySettingRequestOp]
+  static const LocalSdkOP getAnySettingResponseOp = LocalSdkOP._(64);
+
+  ///An SKD OP code for GW to response error to [getAnySettingRequestOp]
+  static const LocalSdkOP getAnySettingFailOp = LocalSdkOP._(64);
+
+  static const LocalSdkOP setAnySettingAckOp = LocalSdkOP._(65);
+  static const LocalSdkOP getAnySettingAckOp = LocalSdkOP._(66);
+  static const LocalSdkOP setAnySettingOperationFailOp = LocalSdkOP._(67);
+
+  final int _value;
+
+  const LocalSdkOP._(this._value);
+}
+
+class LocalSdkFormat {
   LocalSdkFormat._();
 
   @Uint8()
@@ -76,21 +110,22 @@ class LocalSdkFormat {
     index += 4;
     _data.fail_code = pdu[index++];
     _data.tlv_size = ByteData.sublistView(pdu, index, index + 4).getUint32(0);
-    assert (_data.tlv_size > 0);
+    assert(_data.tlv_size > 0);
     index += 4;
-    if ((index+_data.tlv_size) >= pdu.length) {
+    if ((index + _data.tlv_size) >= pdu.length) {
       _data.settings = pdu.sublist(index);
       print('warning: tlv_size exceeds pdu length');
     } else {
-      _data.settings = pdu.sublist(index, index+_data.tlv_size);
+      _data.settings = pdu.sublist(index, index + _data.tlv_size);
       _data.empty = pdu[index++];
       _data.checksum = pdu[index++];
-      assert (index == pdu.length);
+      assert(index == pdu.length);
     }
     return _data;
   }
 
-  factory LocalSdkFormat.fromTypeZwaveSceneGetAllInfoResponse(Uint8List resp_pdu) {
+  factory LocalSdkFormat.fromTypeZwaveSceneGetAllInfoResponse(
+      Uint8List resp_pdu) {
     var op_resp = LocalSdkFormat.fromBasePdu(resp_pdu);
 
     // op_resp.settings = TLV.
@@ -403,19 +438,21 @@ class LocalSdkFormat {
   int checksum;
 }
 
-
 class _ResponseSettingsMultiBase {
-  List toStructSettings(
-      Uint8List resp_settings_pdu, TLVStructBase struct) {
+  List toStructSettings(Uint8List resp_settings_pdu, TLVStructBase struct) {
     var settings = [];
     var n = 0;
     while ((n + 4) < resp_settings_pdu.length) {
-      var _len = ByteData.sublistView(resp_settings_pdu, n + 2, n + 4).getUint16(0);
-      var _type = ByteData.sublistView(resp_settings_pdu, n, n + 2).getUint16(0);
-      var _seq_no = ByteData.sublistView(resp_settings_pdu, n + 4, n + 8).getUint32(0);
-      assert (_type == struct.typeId);
-      assert (_seq_no >= 0);
-      settings.add(struct.fromUint8List(resp_settings_pdu.sublist(n + 8, n + 4 + _len)));
+      var _len =
+          ByteData.sublistView(resp_settings_pdu, n + 2, n + 4).getUint16(0);
+      var _type =
+          ByteData.sublistView(resp_settings_pdu, n, n + 2).getUint16(0);
+      var _seq_no =
+          ByteData.sublistView(resp_settings_pdu, n + 4, n + 8).getUint32(0);
+      assert(_type == struct.typeId);
+      assert(_seq_no >= 0);
+      settings.add(
+          struct.fromUint8List(resp_settings_pdu.sublist(n + 8, n + 4 + _len)));
       n += (4 + _len);
     }
     return settings;
@@ -438,9 +475,9 @@ class ZwaveSceneGetAllInfoResponseSettings extends _ResponseSettingsMultiBase {
       // print('tlv seq_no $_seq_no from ${pdu.sublist(n + 4, n + 8)}');
       // print('tlv value ${pdu.sublist(n + 8, n + 4 + _len)}');
       // print('tlv pdu ${pdu.sublist(n + 4, n + 4 + _len)}');
-      assert (_type == kTYPE_ZWAVE_SCENE_GET_ALL_INFO);
-      assert (_len > 0);
-      assert (_seq_no >= 0);
+      assert(_type == kTYPE_ZWAVE_SCENE_GET_ALL_INFO);
+      assert(_len > 0);
+      assert(_seq_no >= 0);
       var tlv_scene = ZWaveScene.fromPdu(pdu.sublist(n + 8, n + 4 + _len));
       // var zw_scene = ZWaveScene.fromPdu(pdu.sublist(n + 4, n + 4 + _len));
       // print('scene id ${tlv_scene.scene_id} '
@@ -453,6 +490,7 @@ class ZwaveSceneGetAllInfoResponseSettings extends _ResponseSettingsMultiBase {
 
     return obj;
   }
+
   List<ZWaveScene> scenes = [];
 }
 
@@ -460,23 +498,23 @@ class ZwaveRoomGetAllInfoResponseSettings {
   ZwaveRoomGetAllInfoResponseSettings._();
 
   factory ZwaveRoomGetAllInfoResponseSettings.fromSdkResponseSettings(
-      Uint8List pdu
-      ) {
+      Uint8List pdu) {
     var obj = ZwaveRoomGetAllInfoResponseSettings._();
     var n = 0;
     while ((n + 4) < pdu.length) {
       var _len = ByteData.sublistView(pdu, n + 2, n + 4).getUint16(0);
       var _type = ByteData.sublistView(pdu, n, n + 2).getUint16(0);
       var _seq_no = ByteData.sublistView(pdu, n + 4, n + 8).getUint32(0);
-      assert (_type == kTYPE_ZWAVE_ROOM_GET_ALL_INFO);
-      assert (_len > 0);
-      assert (_seq_no >= 0);
+      assert(_type == kTYPE_ZWAVE_ROOM_GET_ALL_INFO);
+      assert(_len > 0);
+      assert(_seq_no >= 0);
       var tlv_room = LocalRoom.fromPdu((pdu.sublist(n + 8, n + 4 + _len)));
       obj.rooms.add(tlv_room);
       n += (4 + _len);
     }
     return obj;
   }
+
   List<LocalRoom> rooms = [];
 }
 
@@ -491,15 +529,16 @@ class ZwaveNodeAllInfoResponseSettings extends _ResponseSettingsMultiBase {
       var _len = ByteData.sublistView(pdu, n + 2, n + 4).getUint16(0);
       var _type = ByteData.sublistView(pdu, n, n + 2).getUint16(0);
       var _seq_no = ByteData.sublistView(pdu, n + 4, n + 8).getUint32(0);
-      assert (_type == kTYPE_ZWAVE_NODE_ALL_INFO);
-      assert (_len > 0);
-      assert (_seq_no >= 0);
+      assert(_type == kTYPE_ZWAVE_NODE_ALL_INFO);
+      assert(_len > 0);
+      assert(_seq_no >= 0);
       var tlv_node = NodeAllInfo.fromPdu((pdu.sublist(n + 8, n + 4 + _len)));
       obj.nodes.add(tlv_node);
       n += (4 + _len);
     }
     return obj;
   }
+
   List<NodeAllInfo> nodes = [];
 }
 
