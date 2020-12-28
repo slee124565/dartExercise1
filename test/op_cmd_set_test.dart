@@ -16,7 +16,7 @@ void main() async {
     gw_id: '011120031',
     account: 'admin',
     password: 'admin',
-    ip_address: '192.168.50.127',
+    ip_address: '192.168.50.230',
     port: 11188,
     settings: [tlv],
   );
@@ -28,7 +28,7 @@ void main() async {
   var _data = Uint8List.fromList(op_cmd.toBytes());
   // _data = Uint8List.fromList(kSceneDoActionRequestUDP);
   var len = await client.send(_data,
-      Endpoint.unicast(InternetAddress('192.168.50.127'), port: Port(11188)));
+      Endpoint.unicast(InternetAddress('192.168.50.230'), port: Port(11188)));
   print('cmd bytes: ${op_cmd.toBytes()}');
   print('data sent, len $len');
   // op_cmd.seq_no++;
