@@ -16,3 +16,27 @@ void main () {
     // var tlv = TLV
   });
 }
+
+/*
+REQUEST PDU
+[
+0, 0, reserved, len
+249 seq_no,
+63 op_code,
+1 version,
+136 magic_id,
+10, 119, 30 gw_id,
+0, 0, 0, 1 app_id,
+97, 100, 109, 105, 110, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+97, 100, 109, 105, 110, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+192, 168, 50, 127,
+43, 180,
+0, 0, 0, 0 reserved_for_gw,
+0 fail_code,
+0, 0, 0, 8 tlv_size,
+0, 227 tlv_type,
+0, 4 tlv_len,
+0, 0, 0, 0 tlv_settings,
+0, 0];
+*/
+
