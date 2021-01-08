@@ -44,11 +44,11 @@ class LocalSdkOP {
   static const LocalSdkOP getAnySettingResponseOp = LocalSdkOP._(64);
 
   ///An SKD OP code for GW to response error to [getAnySettingRequestOp]
-  static const LocalSdkOP getAnySettingFailOp = LocalSdkOP._(64);
+  static const LocalSdkOP getAnySettingFailOp = LocalSdkOP._(65);
 
-  static const LocalSdkOP setAnySettingAckOp = LocalSdkOP._(65);
-  static const LocalSdkOP getAnySettingAckOp = LocalSdkOP._(66);
-  static const LocalSdkOP setAnySettingOperationFailOp = LocalSdkOP._(67);
+  static const LocalSdkOP setAnySettingAckOp = LocalSdkOP._(66);
+  static const LocalSdkOP getAnySettingAckOp = LocalSdkOP._(67);
+  static const LocalSdkOP setAnySettingOperationFailOp = LocalSdkOP._(68);
 
   final int _value;
 

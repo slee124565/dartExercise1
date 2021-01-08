@@ -9,9 +9,9 @@ import 'package:dartExercise1/ccapi/tlv_t.dart';
 import 'package:udp/udp.dart';
 
 void main() async {
-  // var tlv = TLV.zwave_scene_do_action(scene_id: 2);
-  var tlv = TLV.zwave_send_data(
-      node_id: 9, cmd_len: 3, cmd_cls_id: 98, cmd_id: 1, cmd_param: [0xff]);
+  var tlv = TLV.zwave_scene_do_action(scene_id: 2);
+  // var tlv = TLV.zwave_send_data(
+  //     node_id: 9, cmd_len: 3, cmd_cls_id: 98, cmd_id: 1, cmd_param: [0xff]);
   var op_request = LocalSdkFormat.op_setting_set_request(
     gw_id: '011120031',
     account: 'admin',
